@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from './routes/user.routes.js';
+import { errorMiddleware } from "./middleware/error.middleware.js";
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.get('/', (req,res) => {
 
 app.use('/api/users', userRoutes);
 
+
+app.use(errorMiddleware);
 
 
 export default app;
