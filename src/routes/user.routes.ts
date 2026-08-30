@@ -16,7 +16,7 @@ router.get('/', fetchAllUsersController);
 router.get('/:id', fetchUserByIdController);
 router.post('/register', registerUserController);
 router.post('/login', loginUserController);
-router.patch('/:id', updateUserController);
+router.put('/:id', updateUserController);
 router.delete('/:id', deleteUserController);
 
 

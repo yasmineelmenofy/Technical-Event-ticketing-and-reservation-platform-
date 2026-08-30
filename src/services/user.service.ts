@@ -20,7 +20,7 @@ export async function fetchUserById(userId: number) {
   const user = await getUserById(userId);
   if (!user) {
     throw new AppError(404, "User not found");
-}
+  }
   const { password_hash, ...safeUser } = user;
   return safeUser;
 }
@@ -61,6 +61,11 @@ export async function modifyUser(userId: number, name: string, email: string) {
   const existingUser = await getUserById(userId);
   if (!existingUser) {
     throw new AppError(404, "User not found");
+  }
+
+  const emailOwner = await getUserByEmail(email);
+  if (emailOwner && emailOwner.id !== userId) {
+    throw new AppError(409, "Email is already registered");
   }
 
   const updatedUser = await updateUser(userId, name, email);

@@ -1,7 +1,7 @@
 import pool from "../config/database.js";
 
 export async function getAllUsers() {
-  const results = await pool.query("SELECT * FROM users");
+  const results = await pool.query("SELECT * FROM users ORDER BY id ASC");
   return results.rows;
 }
 
