@@ -16,12 +16,12 @@ export async function addVenue(
   name: string,
   location: string,
   capacity: number,
-  description: string,
+  description: string | undefined,
   status: Status,
 ) {
   const results = await pool.query(
     "INSERT INTO venue(name, location, capacity, description, status) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
-    [name, location, capacity, description, status],
+    [name, location, capacity, description ?? null, status],
   );
   return results.rows[0];
 }
@@ -31,12 +31,12 @@ export async function updateVenue(
   name: string,
   location: string,
   capacity: number,
-  description: string,
+  description: string | undefined,
   status: Status,
 ) {
   const results = await pool.query(
     "UPDATE venue SET name = $1, location = $2, capacity = $3, description = $4, status = $5 WHERE id = $6 RETURNING *;",
-    [name, location, capacity, description, status, venueId],
+    [name, location, capacity, description ?? null, status, venueId],
   );
   return results.rows[0];
 }

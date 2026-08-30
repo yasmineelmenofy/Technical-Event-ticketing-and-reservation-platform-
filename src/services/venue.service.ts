@@ -25,16 +25,10 @@ export async function createVenue(
   name: string,
   location: string,
   capacity: number,
-  description: string,
+  description: string | undefined,
   status: Status,
 ) {
-  const venue = await addVenue(
-    name,
-    location,
-    capacity,
-    description,
-    status,
-  );
+  const venue = await addVenue(name, location, capacity, description, status);
   return venue;
 }
 
@@ -43,7 +37,7 @@ export async function modifyVenue(
   name: string,
   location: string,
   capacity: number,
-  description: string,
+  description: string | undefined,
   status: Status,
 ) {
   const existingVenue = await getVenueById(venueId);

@@ -7,7 +7,7 @@ import {
   modifyVenue,
   modifyVenueStatus,
 } from "../services/venue.service.js";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 export const fetchAllVenuesController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -22,6 +22,9 @@ export const fetchAllVenuesController = asyncHandler(
 export const fetchVenueByIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const venueId = Number(req.params.id);
+    if (isNaN(venueId)) {
+      throw new AppError(400, "Invalid venue id");
+    }
     const venue = await fetchVenueById(venueId);
     res.status(200).json({
       message: "Venue retrieved successfully",
@@ -33,7 +36,10 @@ export const fetchVenueByIdController = asyncHandler(
 export const createVenueController = asyncHandler(
   async (req: Request, res: Response) => {
     const { name, location, capacity, description, status } = req.body;
-    if (!name || !location || !capacity || !description || !status) {
+    if (status !== "active" && status !== "inactive") {
+      throw new AppError(400, "Enter valid status");
+    }
+    if (!name || !location || capacity === undefined || capacity === null) {
       throw new AppError(400, "The information of Venue is not complete");
     }
     const venue = await createVenue(
@@ -54,13 +60,13 @@ export const modifyVenueController = asyncHandler(
   async (req: Request, res: Response) => {
     const { name, location, capacity, description, status } = req.body;
     const venueId = Number(req.params.id);
-    if (
-      !venueId ||
-      !name ||
-      !location ||
-      !capacity ||
-      !status
-    ) {
+    if (isNaN(venueId)) {
+      throw new AppError(400, "Invalid venue id");
+    }
+    if (status !== "active" && status !== "inactive") {
+      throw new AppError(400, "Enter valid status");
+    }
+    if (!name || !location || capacity === undefined || capacity === null) {
       throw new AppError(400, "The information of Venue is not complete");
     }
     const updatedVenue = await modifyVenue(
@@ -81,9 +87,12 @@ export const modifyVenueController = asyncHandler(
 export const modifyVenueStatusController = asyncHandler(
   async (req: Request, res: Response) => {
     const { status } = req.body;
+    if (status !== "active" && status !== "inactive") {
+      throw new AppError(400, "Enter valid status");
+    }
     const venueId = Number(req.params.id);
-    if (!venueId || !status) {
-      throw new AppError(400, "The id and status are required");
+    if (isNaN(venueId)) {
+      throw new AppError(400, "Invalid venue id");
     }
     const updatedVenue = await modifyVenueStatus(venueId, status);
     res.status(200).json({

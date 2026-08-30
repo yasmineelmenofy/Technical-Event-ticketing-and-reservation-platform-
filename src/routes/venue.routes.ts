@@ -14,7 +14,7 @@ const router = Router();
 router.get('/', fetchAllVenuesController);
 router.get('/:id', fetchVenueByIdController);
 router.post('/', createVenueController);
-router.patch('/:id', modifyVenueController);
+router.put('/:id', modifyVenueController);
 router.patch('/:id/status', modifyVenueStatusController);
 
 
