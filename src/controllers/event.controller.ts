@@ -8,7 +8,7 @@ import {
 import { AppError } from "../utils/AppError.js";
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import { Status, Category } from "../models/event.model.js";
 const isValidDate = (dateStr: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const d = new Date(dateStr);
@@ -31,9 +31,119 @@ const isValidId = (value: unknown): value is number => {
   return Number.isInteger(n) && n > 0;
 };
 
+const isValidStatus = (value: unknown): value is Status =>
+  value === "draft" ||
+  value === "published" ||
+  value === "cancelled" ||
+  value === "completed";
+
+const isValidCategory = (value: unknown): value is Category =>
+  value === "conference" ||
+  value === "workshop" ||
+  value === "technical_meetup" ||
+  value === "seminar" ||
+  value === "training_session";
+
+const isValidSort = (value: unknown): value is "id" | "title" | "date" =>
+  value === "id" || value === "title" || value === "date";
+
+const isValidOrder = (value: unknown): value is "asc" | "desc" =>
+  value === "asc" || value === "desc";
 export const fetchAllEventsController = asyncHandler(
   async (req: Request, res: Response) => {
-    const events = await fetchAllEvents();
+    const { status, category, venue_id } = req.query;
+    const { sort, order } = req.query;
+    const { page, limit } = req.query;
+    const { fields } = req.query;
+    const filters: {
+      status?: Status;
+      category?: Category;
+      venue_id?: number;
+    } = {};
+    let Page = 1;
+    let Limit = 10;
+
+    if (page !== undefined) {
+      Page = Number(page);
+
+      if (!Number.isInteger(Page) || Page <= 0) {
+        throw new AppError(400, "Invalid page number");
+      }
+    }
+    if (limit !== undefined) {
+      Limit = Number(limit);
+
+      if (!Number.isInteger(Limit) || Limit <= 0 || Limit > 100) {
+        throw new AppError(400, "Invalid limit. Must be between 1 and 100");
+      }
+    }
+    if (status !== undefined) {
+      if (!isValidStatus(status)) {
+        throw new AppError(400, "Enter valid status");
+      }
+      filters.status = status;
+    }
+
+    if (category !== undefined) {
+      if (!isValidCategory(category)) {
+        throw new AppError(400, "Enter valid category");
+      }
+      filters.category = category;
+    }
+
+    if (venue_id !== undefined) {
+      const parsedVenueId = Number(venue_id);
+      if (!isValidId(parsedVenueId)) {
+        throw new AppError(400, "Invalid venue id");
+      }
+      filters.venue_id = parsedVenueId;
+    }
+    if (sort !== undefined) {
+      if (!isValidSort(sort)) {
+        throw new AppError(400, "invalid sort option");
+      }
+    }
+    if (order !== undefined) {
+      if (!isValidOrder(order)) {
+        throw new AppError(400, "invalid order option");
+      }
+    }
+    let selectedFields: string[] | undefined;
+
+    if (fields !== undefined) {
+      if (typeof fields !== "string") {
+        throw new AppError(400, "Invalid fields parameter");
+      }
+
+      selectedFields = fields.split(",").map((field) => field.trim());
+
+      const allowedFields = [
+        "id",
+        "title",
+        "description",
+        "category",
+        "status",
+        "date",
+        "venue_id",
+        "start_time",
+        "end_time",
+        "image",
+      ];
+
+      for (const field of selectedFields) {
+        if (!allowedFields.includes(field)) {
+          throw new AppError(400, `Invalid field: ${field}`);
+        }
+      }
+    }
+    const events = await fetchAllEvents(
+      filters,
+      sort,
+      order,
+      Page,
+      Limit,
+      selectedFields,
+    );
     res.status(200).json({
       message: "Events retrieved successfully",
       data: events,

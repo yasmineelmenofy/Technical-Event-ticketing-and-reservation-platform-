@@ -8,8 +8,28 @@ import {
 } from "../models/venue.model.js";
 import { AppError } from "../utils/AppError.js";
 
-export async function fetchAllVenues() {
-  const venues = await getAllVenues();
+export async function fetchAllVenues(
+  filters: {
+    status?: Status;
+    location?: string;
+    min_capacity?: number;
+    max_capacity?: number;
+  } = {},
+  sort: "id" | "name" | "capacity" = "id",
+  order: "asc" | "desc" = "asc",
+  page: number = 1,
+  limit: number = 10,
+  fields: string[] = [
+    "id",
+    "name",
+    "location",
+    "capacity",
+    "description",
+    "status",
+  ],
+) {
+  const venues = await getAllVenues(filters, sort, order, page, limit, fields);
+
   return venues;
 }
 

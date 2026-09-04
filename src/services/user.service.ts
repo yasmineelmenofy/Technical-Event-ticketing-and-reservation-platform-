@@ -11,9 +11,21 @@ import { AppError } from "../utils/AppError.js";
 
 const SALT_ROUNDS = 10;
 
-export async function fetchAllUsers() {
-  const users = await getAllUsers();
-  return users.map(({ password_hash, ...safeUser }) => safeUser);
+export async function fetchAllUsers(
+  filters: {
+    role?: "customer" | "admin";
+    name?: string;
+    email?: string;
+  } = {},
+  sort: "id" | "name" | "email" = "id",
+  order: "asc" | "desc" = "asc",
+  page: number = 1,
+  limit: number = 10,
+  fields: string[] = ["id", "name", "email", "role"],
+) {
+  const users = await getAllUsers(filters, sort, order, page, limit, fields);
+
+  return users;
 }
 
 export async function fetchUserById(userId: number) {

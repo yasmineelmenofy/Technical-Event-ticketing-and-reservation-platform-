@@ -10,8 +10,30 @@ import {
 import { AppError } from "../utils/AppError.js";
 import { getVenueById } from "../models/venue.model.js";
 
-export async function fetchAllEvents() {
-  const events = await getAllEvents();
+export async function fetchAllEvents(
+  filters: {
+    status?: Status;
+    category?: Category;
+    venue_id?: number;
+  } = {},
+  sort: "id" | "title" | "date" = "id",
+  order: "asc" | "desc" = "asc",
+  page: number = 1,
+  limit: number = 10,
+  fields: string[] = [
+    "id",
+    "title",
+    "description",
+    "category",
+    "status",
+    "date",
+    "venue_id",
+    "start_time",
+    "end_time",
+    "image",
+  ],
+) {
+  const events = await getAllEvents(filters, sort, order, page, limit, fields);
   return events;
 }
 
