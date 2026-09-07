@@ -2,11 +2,14 @@ import express from 'express';
 import userRoutes from './routes/user.routes.js';
 import venueRoutes from './routes/venue.routes.js'
 import eventRoutes from './routes/event.routes.js';
+import authRoutes from "./routes/auth.routes.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 
@@ -19,6 +22,7 @@ app.get('/', (req,res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/venues', venueRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(errorMiddleware);
 

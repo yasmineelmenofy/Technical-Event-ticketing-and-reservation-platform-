@@ -3,7 +3,6 @@ import {
   fetchAllUsers,
   fetchUserById,
   registerUser,
-  loginUser,
   modifyUser,
   removeUser,
 } from "../services/user.service.js";
@@ -153,24 +152,7 @@ export const registerUserController = asyncHandler(
   },
 );
 
-export const loginUserController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-      throw new AppError(400, "Email and password are required");
-    }
-    if (!validator.isEmail(email)) {
-      throw new AppError(400, "Invalid email format");
-    }
-
-    const results = await loginUser(email, password);
-    res.status(200).json({
-      message: "User logged in successfully",
-      data: results,
-    });
-  },
-);
 
 export const updateUserController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -208,3 +190,20 @@ export const deleteUserController = asyncHandler(
     });
   },
 );
+
+export const fetchMyProfileController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new AppError(401, "Authentication required");
+    }
+
+    const user = await fetchUserById(req.user.userId);
+
+    res.status(200).json({
+      message: "Profile retrieved successfully",
+      data: user,
+    });
+  },
+);
+
+

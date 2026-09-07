@@ -3,21 +3,20 @@ import {
   fetchAllUsersController,
   fetchUserByIdController,
   registerUserController,
-  loginUserController,
   updateUserController,
   deleteUserController,
+  fetchMyProfileController,
 } from "../controllers/user.controller.js";
-
+import { authenticate } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/authorize.middleware.js";
 
 const router = Router();
 
-
-router.get('/', fetchAllUsersController);
-router.get('/:id', fetchUserByIdController);
-router.post('/register', registerUserController);
-router.post('/login', loginUserController);
-router.put('/:id', updateUserController);
-router.delete('/:id', deleteUserController);
-
+router.get("/", authenticate, authorize("admin"), fetchAllUsersController);
+router.get("/me", authenticate, fetchMyProfileController);
+router.get("/:id", authenticate, authorize("admin"), fetchUserByIdController);
+router.post("/register", registerUserController);
+router.put("/:id", authenticate, authorize("admin"), updateUserController);
+router.delete("/:id", authenticate, authorize("admin"), deleteUserController);
 
 export default router;

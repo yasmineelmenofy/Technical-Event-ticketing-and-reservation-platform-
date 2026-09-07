@@ -214,3 +214,15 @@ CREATE TABLE seat_hold (
     CONSTRAINT unique_event_seat_hold
         UNIQUE (event_id, seat_id)
 );
+
+CREATE TABLE refresh_tokens (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP,
+
+    CONSTRAINT fk_refresh_token_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);

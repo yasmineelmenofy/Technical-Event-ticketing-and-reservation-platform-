@@ -54,20 +54,6 @@ export async function registerUser(
   return safeUser;
 }
 
-export async function loginUser(email: string, password: string) {
-  const user = await getUserByEmail(email);
-  if (!user) {
-    throw new AppError(401, "Invalid email or password");
-  }
-
-  const passwordMatches = await bcrypt.compare(password, user.password_hash);
-  if (!passwordMatches) {
-    throw new AppError(401, "Invalid email or password");
-  }
-
-  const { password_hash, ...safeUser } = user;
-  return safeUser;
-}
 
 export async function modifyUser(userId: number, name: string, email: string) {
   const existingUser = await getUserById(userId);
