@@ -226,3 +226,20 @@ CREATE TABLE refresh_tokens (
         FOREIGN KEY (user_id)
         REFERENCES users(id)
 );
+-- =========================================================
+-- EVENT TICKET PRICE
+-- =========================================================
+
+CREATE TABLE event_ticket_price (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    event_id INTEGER NOT NULL,
+    type ticket_type NOT NULL,
+    price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+
+    CONSTRAINT fk_event_ticket_price_event
+        FOREIGN KEY (event_id)
+        REFERENCES event(id),
+
+    CONSTRAINT unique_event_ticket_type
+        UNIQUE (event_id, type)
+);
