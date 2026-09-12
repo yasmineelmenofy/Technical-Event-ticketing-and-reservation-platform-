@@ -5,6 +5,7 @@ import eventRoutes from "./routes/event.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import reservationRoutes from "./routes/reservation.routes.js";
 import eventTicketPriceRoutes from "./routes/eventTicketPrice.routes.js";
+import seatRoutes from "./routes/seat.routes.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import cookieParser from "cookie-parser";
 
@@ -26,6 +27,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api", eventTicketPriceRoutes);
+app.use("/api/seats", seatRoutes);
 app.use(errorMiddleware);
 
 export default app;
