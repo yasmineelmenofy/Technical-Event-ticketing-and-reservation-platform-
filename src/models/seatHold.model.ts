@@ -15,6 +15,11 @@ export async function addSeatHold(
         expires_at
       )
       VALUES ($1, $2, $3, $4)
+      ON CONFLICT (event_id, seat_id)
+      DO UPDATE
+      SET reservation_id = EXCLUDED.reservation_id,
+          expires_at = EXCLUDED.expires_at
+      WHERE seat_hold.expires_at <= CURRENT_TIMESTAMP
       RETURNING *;
     `,
     [seatId, eventId, reservationId, expiresAt],

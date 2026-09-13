@@ -56,15 +56,13 @@ export async function createSeatHold(
     throw new AppError(400, "Seat does not belong to this event's venue");
   }
 
-  const existingHold = await getSeatHoldByEventAndSeat(eventId, seatId);
-
-  if (existingHold && new Date(existingHold.expires_at) > new Date()) {
-    throw new AppError(409, "Seat is currently held");
-  }
-
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   const seatHold = await addSeatHold(seatId, eventId, reservationId, expiresAt);
+
+  if (!seatHold) {
+    throw new AppError(409, "Seat is currently held");
+  }
 
   return seatHold;
 }
