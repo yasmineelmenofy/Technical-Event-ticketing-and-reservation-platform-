@@ -5,7 +5,6 @@ import {
   type ReactNode,
 } from "react";
 
-import { apiFetch } from "../api/api";
 import type { User } from "../types/auth";
 
 type AuthContextType = {

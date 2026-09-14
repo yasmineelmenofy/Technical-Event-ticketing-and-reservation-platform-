@@ -1,18 +1,26 @@
 import pool from "../config/database.js";
+import { TicketType } from "./eventTicketPrice.model.js";
 
 export async function addSeat(
   row: string,
   section: string,
   seat_number: number,
   venue_id: number,
+  type: TicketType,
 ) {
   const result = await pool.query(
     `
-      INSERT INTO seat (row, section, seat_number, venue_id)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO seat (
+        row,
+        section,
+        seat_number,
+        venue_id,
+        type
+      )
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `,
-    [row, section, seat_number, venue_id],
+    [row, section, seat_number, venue_id, type],
   );
 
   return result.rows[0];
@@ -50,17 +58,19 @@ export async function updateSeat(
   row: string,
   section: string,
   seat_number: number,
+  type: TicketType,
 ) {
   const result = await pool.query(
     `
       UPDATE seat
       SET row = $1,
           section = $2,
-          seat_number = $3
-      WHERE id = $4
+          seat_number = $3,
+          type = $4
+      WHERE id = $5
       RETURNING *;
     `,
-    [row, section, seat_number, seat_id],
+    [row, section, seat_number, type, seat_id],
   );
 
   return result.rows[0];

@@ -10,7 +10,7 @@ import {
 
 import { getVenues } from "../services/venueService";
 
-import type { Seat } from "../types/seat";
+import type { Seat, SeatType } from "../types/seat";
 import type { Venue } from "../types/venue";
 
 type SeatForm = {
@@ -18,6 +18,7 @@ type SeatForm = {
   section: string;
   row: string;
   seat_number: string;
+  type: SeatType;
 };
 
 const emptyForm: SeatForm = {
@@ -25,7 +26,15 @@ const emptyForm: SeatForm = {
   section: "",
   row: "",
   seat_number: "",
+  type: "regular",
 };
+
+function formatLabel(value: string) {
+  return value
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 function AdminSeatsPage() {
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -86,6 +95,7 @@ function AdminSeatsPage() {
       section: "",
       row: "",
       seat_number: "",
+      type: "regular",
     });
 
     setEditingId(null);
@@ -117,6 +127,7 @@ function AdminSeatsPage() {
       section: seat.section,
       row: seat.row,
       seat_number: String(seat.seat_number),
+      type: seat.type,
     });
 
     setMessage("");
@@ -135,7 +146,8 @@ function AdminSeatsPage() {
       !form.section.trim() ||
       !form.row.trim() ||
       !Number.isInteger(seatNumber) ||
-      seatNumber <= 0
+      seatNumber <= 0 ||
+      !form.type
     ) {
       setError("Please enter valid seat information");
       return;
@@ -152,6 +164,7 @@ function AdminSeatsPage() {
           section: form.section.trim(),
           row: form.row.trim(),
           seat_number: seatNumber,
+          type: form.type,
         });
 
         setMessage("Seat created successfully");
@@ -160,6 +173,7 @@ function AdminSeatsPage() {
           row: form.row.trim(),
           section: form.section.trim(),
           seat_number: seatNumber,
+          type: form.type,
         });
 
         setMessage("Seat updated successfully");
@@ -172,6 +186,7 @@ function AdminSeatsPage() {
         section: "",
         row: "",
         seat_number: "",
+        type: "regular",
       });
 
       setEditingId(null);
@@ -286,6 +301,21 @@ function AdminSeatsPage() {
             }
           />
 
+          <select
+            value={form.type}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                type: event.target.value as SeatType,
+              })
+            }
+          >
+            <option value="regular">Regular</option>
+            <option value="vip">VIP</option>
+            <option value="student">Student</option>
+            <option value="early_bird">Early Bird</option>
+          </select>
+
           <div className="form-actions">
             <button
               type="submit"
@@ -333,9 +363,15 @@ function AdminSeatsPage() {
                 <p className="card-muted">Row: {seat.row}</p>
 
                 <p className="card-muted">Seat number: {seat.seat_number}</p>
+
+                <p className="card-muted">Type: {formatLabel(seat.type)}</p>
               </div>
 
               <div className="admin-card-side">
+                <span className={`status-badge status-${seat.type}`}>
+                  {formatLabel(seat.type)}
+                </span>
+
                 <button
                   type="button"
                   className="secondary-button"

@@ -1,9 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 function AdminPage() {
-  const { user } = useAuth();
-
   return (
     <section className="page">
       <div className="page-header">

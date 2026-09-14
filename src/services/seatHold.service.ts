@@ -58,12 +58,14 @@ export async function createSeatHold(
     throw new AppError(400, "Seat does not belong to this event's venue");
   }
 
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  if (seat.type !== type) {
+    throw new AppError(
+      400,
+      `Seat is ${seat.type}, but ${type} ticket was requested`,
+    );
+  }
 
-  console.log("Node current time:", new Date());
-  console.log("Node current ISO:", new Date().toISOString());
-  console.log("Expires at:", expiresAt);
-  console.log("Expires ISO:", expiresAt.toISOString());
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   const seatHold = await addSeatHold(
     seatId,

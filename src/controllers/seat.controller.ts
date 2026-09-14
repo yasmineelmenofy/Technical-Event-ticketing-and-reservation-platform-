@@ -8,6 +8,7 @@ import {
   removeSeat,
 } from "../services/seat.service.js";
 import { Request, Response } from "express";
+import { TicketType } from "../models/eventTicketPrice.model.js";
 
 const isValidId = (value: unknown): value is number => {
   const n = Number(value);
@@ -35,9 +36,18 @@ const isValidSeatNumber = (value: unknown): value is number => {
   return Number.isInteger(n) && n > 0;
 };
 
+const isValidTicketType = (value: unknown): value is TicketType => {
+  return (
+    value === "regular" ||
+    value === "vip" ||
+    value === "student" ||
+    value === "early_bird"
+  );
+};
+
 export const createSeatController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { row, section, seat_number, venue_id } = req.body;
+    const { row, section, seat_number, venue_id, type } = req.body;
 
     if (!isValidRow(row)) {
       throw new AppError(
@@ -61,11 +71,19 @@ export const createSeatController = asyncHandler(
       throw new AppError(400, "Invalid seat number");
     }
 
+    if (!isValidTicketType(type)) {
+      throw new AppError(
+        400,
+        "Invalid seat type. Must be regular, vip, student, or early_bird",
+      );
+    }
+
     const seat = await createSeat(
       row.trim(),
       section.trim(),
       Number(seat_number),
       Number(venue_id),
+      type,
     );
 
     res.status(201).json({
@@ -112,7 +130,8 @@ export const fetchSeatByIdController = asyncHandler(
 export const modifySeatController = asyncHandler(
   async (req: Request, res: Response) => {
     const seatId = Number(req.params.id);
-    const { row, section, seat_number } = req.body;
+
+    const { row, section, seat_number, type } = req.body;
 
     if (!isValidId(seatId)) {
       throw new AppError(400, "Invalid seat id");
@@ -136,11 +155,19 @@ export const modifySeatController = asyncHandler(
       throw new AppError(400, "Invalid seat number");
     }
 
+    if (!isValidTicketType(type)) {
+      throw new AppError(
+        400,
+        "Invalid seat type. Must be regular, vip, student, or early_bird",
+      );
+    }
+
     const seat = await modifySeat(
       seatId,
       row.trim(),
       section.trim(),
       Number(seat_number),
+      type,
     );
 
     res.status(200).json({

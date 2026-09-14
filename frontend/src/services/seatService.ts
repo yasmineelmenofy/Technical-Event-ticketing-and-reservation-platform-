@@ -1,5 +1,5 @@
 import { apiFetch } from "../api/api";
-import type { Seat } from "../types/seat";
+import type { Seat, SeatType } from "../types/seat";
 
 type SeatsResponse = {
   message: string;
@@ -22,6 +22,7 @@ export async function createSeat(data: {
   section: string;
   seat_number: number;
   venue_id: number;
+  type: SeatType;
 }) {
   const response = await apiFetch("/api/seats", {
     method: "POST",
@@ -37,6 +38,7 @@ export async function updateSeat(
     row: string;
     section: string;
     seat_number: number;
+    type: SeatType;
   },
 ) {
   const response = await apiFetch(`/api/seats/${seatId}`, {

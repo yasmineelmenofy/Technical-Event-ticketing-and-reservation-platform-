@@ -8,12 +8,14 @@ import {
 
 import { AppError } from "../utils/AppError.js";
 import { getVenueById } from "../models/venue.model.js";
+import { TicketType } from "../models/eventTicketPrice.model.js";
 
 export async function createSeat(
   row: string,
   section: string,
   seat_number: number,
   venue_id: number,
+  type: TicketType,
 ) {
   const venue = await getVenueById(venue_id);
 
@@ -21,7 +23,7 @@ export async function createSeat(
     throw new AppError(404, "Venue not found");
   }
 
-  const newSeat = await addSeat(row, section, seat_number, venue_id);
+  const newSeat = await addSeat(row, section, seat_number, venue_id, type);
 
   return newSeat;
 }
@@ -51,6 +53,7 @@ export async function modifySeat(
   row: string,
   section: string,
   seat_number: number,
+  type: TicketType,
 ) {
   const seat = await getSeatById(seatId);
 
@@ -58,7 +61,7 @@ export async function modifySeat(
     throw new AppError(404, "Seat not found");
   }
 
-  const updatedSeat = await updateSeat(seatId, row, section, seat_number);
+  const updatedSeat = await updateSeat(seatId, row, section, seat_number, type);
 
   return updatedSeat;
 }

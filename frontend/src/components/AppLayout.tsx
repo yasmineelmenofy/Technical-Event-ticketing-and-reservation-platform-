@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../api/api";
 
@@ -24,7 +25,7 @@ function AppLayout() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1>Eventify</h1>
-          <p>Ticketing Platform</p>
+          <p>Technical Event Platform</p>
         </div>
 
         <nav className="nav">
@@ -97,7 +98,9 @@ function AppLayout() {
       </aside>
 
       <main className="main-content">
-        <Outlet />
+        <div className="page">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
