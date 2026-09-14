@@ -1,33 +1,40 @@
+import { PoolClient } from "pg";
 import pool from "../config/database.js";
+import { TicketType } from "./eventTicketPrice.model.js";
 
 export async function addSeatHold(
   seatId: number,
   eventId: number,
   reservationId: number,
+  type: TicketType,
   expiresAt: Date,
+  client?: PoolClient,
 ) {
-  const result = await pool.query(
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       INSERT INTO seat_hold (
         seat_id,
         event_id,
         reservation_id,
+        type,
         expires_at
       )
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (event_id, seat_id)
       DO UPDATE
       SET reservation_id = EXCLUDED.reservation_id,
+          type = EXCLUDED.type,
           expires_at = EXCLUDED.expires_at
       WHERE seat_hold.expires_at <= CURRENT_TIMESTAMP
       RETURNING *;
     `,
-    [seatId, eventId, reservationId, expiresAt],
+    [seatId, eventId, reservationId, type, expiresAt],
   );
 
   return result.rows[0];
 }
-
 export async function getSeatHoldById(seatHoldId: number) {
   const result = await pool.query(
     `
@@ -41,8 +48,13 @@ export async function getSeatHoldById(seatHoldId: number) {
   return result.rows[0];
 }
 
-export async function getSeatHoldsByReservation(reservationId: number) {
-  const result = await pool.query(
+export async function getSeatHoldsByReservation(
+  reservationId: number,
+  client?: PoolClient,
+) {
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       SELECT *
       FROM seat_hold
@@ -72,8 +84,10 @@ export async function getSeatHoldByEventAndSeat(
   return result.rows[0];
 }
 
-export async function deleteSeatHold(seatHoldId: number) {
-  const result = await pool.query(
+export async function deleteSeatHold(seatHoldId: number, client?: PoolClient) {
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       DELETE FROM seat_hold
       WHERE id = $1

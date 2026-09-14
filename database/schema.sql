@@ -197,6 +197,7 @@ CREATE TABLE seat_hold (
     seat_id INTEGER NOT NULL,
     event_id INTEGER NOT NULL,
     reservation_id INTEGER NOT NULL,
+    type ticket_type NOT NULL,
     expires_at TIMESTAMP NOT NULL,
 
     CONSTRAINT fk_seat_hold_seat

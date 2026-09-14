@@ -11,12 +11,14 @@ import { AppError } from "../utils/AppError.js";
 import { getReservationById } from "../models/reservation.model.js";
 import { getEventById } from "../models/event.model.js";
 import { getSeatById } from "../models/seat.model.js";
+import { TicketType } from "../models/eventTicketPrice.model.js";
 
 export async function createSeatHold(
   userId: number,
   seatId: number,
   eventId: number,
   reservationId: number,
+  type: TicketType,
 ) {
   const reservation = await getReservationById(reservationId);
 
@@ -58,7 +60,13 @@ export async function createSeatHold(
 
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  const seatHold = await addSeatHold(seatId, eventId, reservationId, expiresAt);
+  const seatHold = await addSeatHold(
+    seatId,
+    eventId,
+    reservationId,
+    type,
+    expiresAt,
+  );
 
   if (!seatHold) {
     throw new AppError(409, "Seat is currently held");

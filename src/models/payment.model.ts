@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import pool from "../config/database.js";
 
 export type PaymentStatus = "accepted" | "rejected";
@@ -7,8 +8,11 @@ export async function addPayment(
   transactionId: string,
   amount: number,
   status: PaymentStatus,
+  client?: PoolClient,
 ) {
-  const result = await pool.query(
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       INSERT INTO payment (
         reservation_id,
@@ -40,8 +44,11 @@ export async function getPaymentById(paymentId: number) {
 
 export async function getPaymentByReservation(
   reservationId: number,
+  client?: PoolClient,
 ) {
-  const result = await pool.query(
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       SELECT *
       FROM payment
@@ -52,7 +59,6 @@ export async function getPaymentByReservation(
 
   return result.rows[0];
 }
-
 export async function updatePaymentStatus(
   paymentId: number,
   status: PaymentStatus,

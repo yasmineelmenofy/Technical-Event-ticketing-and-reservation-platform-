@@ -9,15 +9,23 @@ import {
   removeSeatHold,
   fetchAvailableSeatsByEvent,
 } from "../services/seatHold.service.js";
+import { TicketType } from "../models/eventTicketPrice.model.js";
 
 const isValidId = (value: unknown): value is number => {
   const n = Number(value);
   return Number.isInteger(n) && n > 0;
 };
-
+const isValidTicketType = (value: unknown): value is TicketType => {
+  return (
+    value === "regular" ||
+    value === "vip" ||
+    value === "student" ||
+    value === "early_bird"
+  );
+};
 export const createSeatHoldController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { seat_id, event_id, reservation_id } = req.body;
+    const { seat_id, event_id, reservation_id, type } = req.body;
 
     if (!isValidId(seat_id)) {
       throw new AppError(400, "Invalid seat id");
@@ -30,14 +38,16 @@ export const createSeatHoldController = asyncHandler(
     if (!isValidId(reservation_id)) {
       throw new AppError(400, "Invalid reservation id");
     }
-
-    const userId = req.user!.userId;
+    if (!isValidTicketType(type)) {
+      throw new AppError(400, "Invalid ticket type");
+    }
 
     const seatHold = await createSeatHold(
-      userId,
+      req.user!.userId,
       Number(seat_id),
       Number(event_id),
       Number(reservation_id),
+      type,
     );
 
     res.status(201).json({

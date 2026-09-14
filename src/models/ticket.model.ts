@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import pool from "../config/database.js";
 import { TicketType } from "./eventTicketPrice.model.js";
 
@@ -7,8 +8,11 @@ export async function addTicket(
   seatId: number,
   reservationId: number,
   eventId: number,
+  client?: PoolClient,
 ) {
-  const result = await pool.query(
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       INSERT INTO ticket (
         type,
@@ -26,9 +30,7 @@ export async function addTicket(
   return result.rows[0];
 }
 
-export async function getTicketsByReservation(
-  reservationId: number,
-) {
+export async function getTicketsByReservation(reservationId: number) {
   const result = await pool.query(
     `
       SELECT *

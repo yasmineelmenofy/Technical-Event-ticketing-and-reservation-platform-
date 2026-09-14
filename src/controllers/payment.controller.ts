@@ -3,10 +3,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
 
 import {
-  createPayment,
+  processPayment,
   fetchPaymentById,
   fetchPaymentByReservation,
-  modifyPaymentStatus,
 } from "../services/payment.service.js";
 
 import { PaymentStatus } from "../models/payment.model.js";
@@ -22,7 +21,7 @@ const isValidPaymentStatus = (
   return value === "accepted" || value === "rejected";
 };
 
-export const createPaymentController = asyncHandler(
+export const processPaymentController = asyncHandler(
   async (req: Request, res: Response) => {
     const reservationId = Number(req.params.reservationId);
     const { transaction_id, status } = req.body;
@@ -42,7 +41,7 @@ export const createPaymentController = asyncHandler(
       throw new AppError(400, "Invalid payment status");
     }
 
-    const payment = await createPayment(
+    const payment = await processPayment(
       req.user!.userId,
       reservationId,
       transaction_id.trim(),
@@ -50,7 +49,7 @@ export const createPaymentController = asyncHandler(
     );
 
     res.status(201).json({
-      message: "Payment created successfully",
+      message: "Payment processed successfully",
       data: payment,
     });
   },
@@ -105,31 +104,3 @@ export const fetchPaymentByReservationController =
     },
   );
 
-export const modifyPaymentStatusController =
-  asyncHandler(
-    async (req: Request, res: Response) => {
-      const paymentId = Number(req.params.id);
-      const { status } = req.body;
-
-      if (!isValidId(paymentId)) {
-        throw new AppError(400, "Invalid payment id");
-      }
-
-      if (!isValidPaymentStatus(status)) {
-        throw new AppError(400, "Invalid payment status");
-      }
-
-      const payment =
-        await modifyPaymentStatus(
-          paymentId,
-          status,
-          req.user!.userId,
-          req.user!.role,
-        );
-
-      res.status(200).json({
-        message: "Payment status updated successfully",
-        data: payment,
-      });
-    },
-  );

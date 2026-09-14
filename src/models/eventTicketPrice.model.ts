@@ -1,9 +1,16 @@
 import pool from "../config/database.js";
+import { PoolClient } from "pg";
 
 export type TicketType = "regular" | "vip" | "student" | "early_bird";
 
-export async function getTicketPrice(eventId: number, type: TicketType) {
-  const result = await pool.query(
+export async function getTicketPrice(
+  eventId: number,
+  type: TicketType,
+  client?: PoolClient,
+) {
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       SELECT *
       FROM event_ticket_price

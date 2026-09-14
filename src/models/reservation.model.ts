@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import pool from "../config/database.js";
 
 export async function addReservation(userId: number, eventId: number) {
@@ -157,8 +158,13 @@ export async function getAllReservations(
   return results.rows;
 }
 
-export async function getReservationById(reservationId: number) {
-  const result = await pool.query(
+export async function getReservationById(
+  reservationId: number,
+  client?: PoolClient,
+) {
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       SELECT *
       FROM reservation
@@ -173,8 +179,11 @@ export async function getReservationById(reservationId: number) {
 export async function updateReservationStatus(
   reservationId: number,
   status: "pending" | "confirmed" | "cancelled",
+  client?: PoolClient,
 ) {
-  const result = await pool.query(
+  const db = client ?? pool;
+
+  const result = await db.query(
     `
       UPDATE reservation
       SET status = $1
