@@ -60,6 +60,11 @@ export async function createSeatHold(
 
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+  console.log("Node current time:", new Date());
+  console.log("Node current ISO:", new Date().toISOString());
+  console.log("Expires at:", expiresAt);
+  console.log("Expires ISO:", expiresAt.toISOString());
+
   const seatHold = await addSeatHold(
     seatId,
     eventId,

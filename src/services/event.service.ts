@@ -4,9 +4,11 @@ import {
   addEvent,
   updateEvent,
   updateEventStatus,
+  hasVenueEventOverlap,
   Status,
   Category,
 } from "../models/event.model.js";
+
 import { AppError } from "../utils/AppError.js";
 import { getVenueById } from "../models/venue.model.js";
 
@@ -34,14 +36,17 @@ export async function fetchAllEvents(
   ],
 ) {
   const events = await getAllEvents(filters, sort, order, page, limit, fields);
+
   return events;
 }
 
 export async function fetchEventById(eventId: number) {
   const event = await getEventById(eventId);
+
   if (!event) {
-    throw new AppError(404, "Evnet not found");
+    throw new AppError(404, "Event not found");
   }
+
   return event;
 }
 
@@ -57,9 +62,22 @@ export async function createEvent(
   image: string | undefined,
 ) {
   const venue = await getVenueById(venue_id);
+
   if (!venue) {
     throw new AppError(404, "Venue not found");
   }
+
+  const hasOverlap = await hasVenueEventOverlap(
+    venue_id,
+    date,
+    start_time,
+    end_time,
+  );
+
+  if (hasOverlap) {
+    throw new AppError(409, "Venue is already booked during this time");
+  }
+
   const newEvent = await addEvent(
     title,
     description,
@@ -71,6 +89,7 @@ export async function createEvent(
     end_time,
     image,
   );
+
   return newEvent;
 }
 
@@ -87,13 +106,29 @@ export async function modifyEvent(
   image: string | undefined,
 ) {
   const event = await getEventById(eventId);
+
   if (!event) {
-    throw new AppError(404, "Evnet not found");
+    throw new AppError(404, "Event not found");
   }
+
   const venue = await getVenueById(venue_id);
+
   if (!venue) {
     throw new AppError(404, "Venue not found");
   }
+
+  const hasOverlap = await hasVenueEventOverlap(
+    venue_id,
+    date,
+    start_time,
+    end_time,
+    eventId,
+  );
+
+  if (hasOverlap) {
+    throw new AppError(409, "Venue is already booked during this time");
+  }
+
   const updatedEvent = await updateEvent(
     eventId,
     title,
@@ -106,14 +141,18 @@ export async function modifyEvent(
     end_time,
     image,
   );
+
   return updatedEvent;
 }
 
 export async function modifyEventStatus(eventId: number, status: Status) {
   const event = await getEventById(eventId);
+
   if (!event) {
-    throw new AppError(404, "Evnet not found");
+    throw new AppError(404, "Event not found");
   }
+
   const updatedEvent = await updateEventStatus(eventId, status);
+
   return updatedEvent;
 }

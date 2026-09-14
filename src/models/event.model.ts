@@ -1,4 +1,5 @@
 import pool from "../config/database.js";
+
 export type Category =
   | "conference"
   | "workshop"
@@ -7,6 +8,7 @@ export type Category =
   | "training_session";
 
 export type Status = "draft" | "published" | "cancelled" | "completed";
+
 export async function getAllEvents(
   filters: {
     status?: Status;
@@ -33,6 +35,7 @@ export async function getAllEvents(
   const conditions: string[] = [];
   const values: (Status | Category | number)[] = [];
   const offset = (page - 1) * limit;
+
   const allowedFields = [
     "id",
     "title",
@@ -45,6 +48,7 @@ export async function getAllEvents(
     "end_time",
     "image",
   ] as const;
+
   if (filters.status !== undefined) {
     values.push(filters.status);
     conditions.push(`status = $${values.length}`);
@@ -59,18 +63,22 @@ export async function getAllEvents(
     values.push(filters.venue_id);
     conditions.push(`venue_id = $${values.length}`);
   }
+
   values.push(limit);
   const limitPlaceholder = values.length;
 
   values.push(offset);
   const offsetPlaceholder = values.length;
+
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const allowedSortColumns = ["id", "title", "date"] as const;
+
   const sortColumn = allowedSortColumns.includes(sort) ? sort : "id";
 
   const sortOrder = order === "desc" ? "DESC" : "ASC";
+
   const selectedFields = fields.filter((field) =>
     allowedFields.includes(field as (typeof allowedFields)[number]),
   );
@@ -79,16 +87,68 @@ export async function getAllEvents(
     selectedFields.length > 0
       ? selectedFields.join(", ")
       : allowedFields.join(", ");
-  const query = `SELECT ${selectClause} FROM event ${whereClause}
-  ORDER BY ${sortColumn} ${sortOrder}
-  LIMIT $${limitPlaceholder} OFFSET $${offsetPlaceholder};`;
+
+  const query = `
+    SELECT ${selectClause}
+    FROM event
+    ${whereClause}
+    ORDER BY ${sortColumn} ${sortOrder}
+    LIMIT $${limitPlaceholder}
+    OFFSET $${offsetPlaceholder};
+  `;
+
   const result = await pool.query(query, values);
+
   return result.rows;
 }
 
 export async function getEventById(eventId: number) {
-  const result = await pool.query("SELECT * FROM event WHERE id=$1", [eventId]);
+  const result = await pool.query("SELECT * FROM event WHERE id = $1", [
+    eventId,
+  ]);
+
   return result.rows[0];
+}
+
+export async function hasVenueEventOverlap(
+  venueId: number,
+  date: Date,
+  startTime: string,
+  endTime: string,
+  excludeEventId?: number,
+) {
+  const values: (number | Date | string)[] = [
+    venueId,
+    date,
+    startTime,
+    endTime,
+  ];
+
+  let query = `
+    SELECT EXISTS (
+      SELECT 1
+      FROM event
+      WHERE venue_id = $1
+        AND date = $2
+        AND status IN ('draft', 'published')
+        AND start_time < $4
+        AND end_time > $3
+  `;
+
+  if (excludeEventId !== undefined) {
+    values.push(excludeEventId);
+    query += `
+        AND id <> $5
+    `;
+  }
+
+  query += `
+    );
+  `;
+
+  const result = await pool.query(query, values);
+
+  return result.rows[0].exists;
 }
 
 export async function addEvent(
@@ -103,7 +163,21 @@ export async function addEvent(
   image: string | undefined,
 ) {
   const result = await pool.query(
-    "INSERT INTO event(title,description,category,status,date,venue_id,start_time,end_time,image) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;",
+    `
+      INSERT INTO event (
+        title,
+        description,
+        category,
+        status,
+        date,
+        venue_id,
+        start_time,
+        end_time,
+        image
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *;
+    `,
     [
       title,
       description ?? null,
@@ -116,6 +190,7 @@ export async function addEvent(
       image ?? null,
     ],
   );
+
   return result.rows[0];
 }
 
@@ -132,7 +207,21 @@ export async function updateEvent(
   image: string | undefined,
 ) {
   const result = await pool.query(
-    "UPDATE event SET title=$1 , description=$2 , category=$3 , status=$4 , date=$5 , venue_id=$6 ,start_time=$7 , end_time=$8 , image=$9 WHERE id=$10 RETURNING *;",
+    `
+      UPDATE event
+      SET
+        title = $1,
+        description = $2,
+        category = $3,
+        status = $4,
+        date = $5,
+        venue_id = $6,
+        start_time = $7,
+        end_time = $8,
+        image = $9
+      WHERE id = $10
+      RETURNING *;
+    `,
     [
       title,
       description ?? null,
@@ -146,13 +235,20 @@ export async function updateEvent(
       eventId,
     ],
   );
+
   return result.rows[0];
 }
 
 export async function updateEventStatus(eventId: number, status: Status) {
   const result = await pool.query(
-    "UPDATE event SET  status=$1 WHERE id=$2  RETURNING *;",
+    `
+      UPDATE event
+      SET status = $1
+      WHERE id = $2
+      RETURNING *;
+    `,
     [status, eventId],
   );
+
   return result.rows[0];
 }
