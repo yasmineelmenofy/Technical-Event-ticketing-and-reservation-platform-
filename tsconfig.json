@@ -25,5 +25,5 @@
     "esModuleInterop": true
   },
   "include": ["src"],
-  "exclude": ["frontend", "dist"]
+  "exclude": ["test-client", "dist"]
 }

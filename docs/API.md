@@ -1027,7 +1027,7 @@ The schema enforces important relationships and uniqueness rules, including:
 
 The controllers throw `AppError` instances and pass failures to the global error middleware. Exact response envelope for errors is centralized in that middleware; endpoint-specific error messages are documented above where known from the controllers/services.
 
-## Notes for frontend clients
+## Notes for API clients
 
 When using `fetch`, include credentials so authentication cookies are sent:
 
@@ -1038,4 +1038,4 @@ fetch(url, {
 });
 ```
 
-The current frontend API helper uses `credentials: "include"` for every request.
+The included test client's API helper uses `credentials: "include"` for every request.
